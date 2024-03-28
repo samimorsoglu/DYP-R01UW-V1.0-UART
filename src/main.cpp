@@ -3,6 +3,8 @@
 #define RX_PIN 16 // Sensörün TX pininin bağlı olduğu ESP32 pin numarası 
 #define TX_PIN 17 // Sensörün RX pininin bağlı olduğu ESP32 pin numarası 
 
+int distance = 0;
+
 HardwareSerial sensorSerial(1); 
 
 void setup() {
@@ -22,10 +24,15 @@ void loop() {
     uint8_t data_l = data[2];
     uint8_t sum = data[3];
 
-    Serial.print("Frame: "); Serial.println(frame);
-    Serial.print("Data_H: "); Serial.println(data_h);
-    Serial.print("Data_L: "); Serial.println(data_l);
-    Serial.print("Sum: "); Serial.println(sum);
+    distance= (data_h * 256) + data_l;
+  
+  
+    // Serial.print("Frame: "); Serial.println(frame);
+    // Serial.print("Data_H: "); Serial.println(data_h);
+    // Serial.print("Data_L: "); Serial.println(data_l);
+    // Serial.print("Sum: "); Serial.println(sum);
+    Serial.print("Distance: "); Serial.print(distance); Serial.println("mm");
+    
   }
   
   delay(100); 
