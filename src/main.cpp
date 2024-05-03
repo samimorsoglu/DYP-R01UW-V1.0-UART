@@ -1,22 +1,26 @@
-#include <HardwareSerial.h>
+#include <Arduino.h>
 
-#define RX_PIN 16 // Sensörün TX pininin bağlı olduğu ESP32 pin numarası 
+#define RX_PIN 18 // Sensörün TX pininin bağlı olduğu ESP32 pin numarası 
 #define TX_PIN 17 // Sensörün RX pininin bağlı olduğu ESP32 pin numarası 
 
-int distance = 0;
-
-HardwareSerial sensorSerial(1); 
+int distance =0;
+volatile bool newData = false;
+void handleInterrupt() {
+  newData = true;
+}
 
 void setup() {
   Serial.begin(115200); 
-  sensorSerial.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN); 
+  Serial1.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN); 
+
+  attachInterrupt(digitalPinToInterrupt(RX_PIN), handleInterrupt, FALLING);
 }
 
-void loop() {
-  if (sensorSerial.available() >= 4) { 
+void sensorcheck() {
+  while (Serial1.available() >= 4) { 
     uint8_t data[4];
     for (int i = 0; i < 4; i++) {
-      data[i] = sensorSerial.read();
+      data[i] = Serial1.read();
     }
 
     uint8_t frame = data[0];
@@ -24,16 +28,18 @@ void loop() {
     uint8_t data_l = data[2];
     uint8_t sum = data[3];
 
-    distance= (data_h * 256) + data_l;
-  
-  
-    // Serial.print("Frame: "); Serial.println(frame);
-    // Serial.print("Data_H: "); Serial.println(data_h);
-    // Serial.print("Data_L: "); Serial.println(data_l);
-    // Serial.print("Sum: "); Serial.println(sum);
-    Serial.print("Distance: "); Serial.print(distance); Serial.println("mm");
-    
+    distance = (data_h * 256) + data_l;
+
   }
-  
-  delay(100); 
+
 }
+void loop() {
+  if (newData) { 
+    sensorcheck();
+    newData = false; 
+  }
+  Serial.println(distance);
+  delay(2000);
+  
+}
+
